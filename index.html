@@ -36,6 +36,14 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(245,158,11,0.5); }
         .animate-fade-in { animation: fade-in 0.3s ease-out; }
         .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        
+        /* Breathing Animation for Start Button */
+        @keyframes breath {
+            0%, 100% { transform: scale(1); box-shadow: 0 20px 60px rgba(217,119,6,0.4); filter: brightness(1); }
+            50% { transform: scale(1.03); box-shadow: 0 0 80px rgba(251,191,36,0.6); filter: brightness(1.2); }
+        }
+        .animate-breath { animation: breath 2s infinite ease-in-out; }
+
         @keyframes fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Utility for hiding/showing */
@@ -54,16 +62,16 @@
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
     "react": "https://esm.sh/react@^19.2.4",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "xlsx": "https://esm.sh/xlsx@^0.18.5",
     "firebase/": "https://esm.sh/firebase@^12.8.0/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "react/": "https://esm.sh/react@^19.2.4/"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="selection:bg-amber-500/30 overflow-x-hidden min-h-screen">
+<body class="selection:bg-amber-500/30 overflow-x-hidden min-h-screen pb-6">
 
     <!-- Background Elements -->
     <div class="fixed inset-0 pointer-events-none opacity-5 flex justify-around z-0">
@@ -96,7 +104,7 @@
                 </button>
                 <!-- Reset Button triggers Modal -->
                 <button id="btn-open-reset" class="p-3 rounded-xl bg-red-950/80 hover:bg-red-600 border border-red-500/50 text-red-200 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2" title="危險：系統重置 (清空所有資料)">
-                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
                     <span class="font-bold text-sm">系統清空</span>
                 </button>
             </div>
@@ -192,7 +200,7 @@
                                 <input type="number" id="input-draw-count" value="1" min="1" class="w-32 bg-red-950/40 border-2 border-amber-500/30 rounded-2xl px-2 py-3 text-4xl font-black text-center text-amber-100 outline-none focus:border-amber-500 shadow-inner" />
                                 <span class="text-amber-500 font-black text-2xl mr-4">位幸運星</span>
                             </div>
-                            <button id="btn-start-draw" class="group relative px-24 py-10 rounded-[3rem] bg-gradient-to-br from-amber-300 via-amber-600 to-amber-700 text-red-950 font-black text-4xl shadow-[0_20px_60px_rgba(217,119,6,0.4)] hover:scale-105 active:scale-95 transition-all border-t-2 border-amber-200/50 flex items-center gap-6">
+                            <button id="btn-start-draw" class="group relative px-24 py-10 rounded-[3rem] bg-gradient-to-br from-amber-300 via-amber-600 to-amber-700 text-red-950 font-black text-4xl border-t-2 border-amber-200/50 flex items-center gap-6 animate-breath">
                                 幸運開獎 <i data-lucide="play" class="w-10 h-10 fill-current"></i>
                             </button>
                             <div class="text-amber-500/40 font-bold text-sm bg-black/20 px-4 py-2 rounded-full">參加者總數: <span id="count-participants-stage">0</span> 人</div>
@@ -275,6 +283,9 @@
                 </div>
             </section>
         </main>
+        
+        <!-- Firebase Status Footer -->
+        <div class="fixed bottom-2 right-4 text-[10px] text-white/20 font-mono z-50 pointer-events-none select-none">☁️ Firebase 雲端同步已就緒</div>
     </div>
 
     <!-- Info Modal -->
@@ -510,7 +521,7 @@
                     <div class="relative overflow-hidden rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-red-900/90 to-black border border-amber-500/30 p-3 md:p-8 shadow-2xl transform hover:scale-[1.02] transition-all flex flex-col items-center justify-center min-h-[160px] md:min-h-[300px] w-full text-center group">
                         <div class="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div class="text-2xl md:text-5xl font-black text-amber-50 mb-1 md:mb-4 drop-shadow-md w-full break-words leading-tight relative z-10">${w.name}</div>
-                        <div class="text-lg md:text-4xl font-bold text-amber-400 tracking-widest uppercase mt-1 md:mt-2 flex items-center justify-center gap-1 md:gap-2 border-t border-amber-500/20 pt-2 md:pt-4 w-full relative z-10">
+                        <div class="text-[#FFD700] text-xl md:text-4xl font-bold tracking-widest uppercase mt-1 md:mt-2 flex items-center justify-center gap-1 md:gap-2 border-t border-amber-500/20 pt-2 md:pt-4 w-full relative z-10">
                             <span class="text-amber-500/50 text-xs md:text-xl">桌</span> ${w.tableNumber || '貴賓'}
                         </div>
                         <div class="text-xs md:text-sm text-amber-500/60 font-bold mt-2 md:mt-4 relative z-10 truncate w-full px-1">${w.prizeName}</div>
@@ -689,7 +700,33 @@
             }
 
             const timestamp = Date.now();
-            if(window.confetti) window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 }, colors: ['#ffd700', '#ff0000', '#ffffff'] });
+            
+            // Enhanced Gold Confetti (Duration 2s)
+            if(window.confetti) {
+                var duration = 2000;
+                var end = Date.now() + duration;
+
+                (function frame() {
+                  window.confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#FFD700', '#FFA500']
+                  });
+                  window.confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#FFD700', '#FFA500']
+                  });
+
+                  if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                  }
+                }());
+            }
 
             const newWinners = luckies.map(l => ({
                 id: l.id,
