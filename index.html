@@ -41,16 +41,23 @@
         /* Utility for hiding/showing */
         .hidden-el { display: none !important; }
         .flex-el { display: flex !important; }
+        
+        /* Input Number Styling */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
     </style>
 <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
     "react": "https://esm.sh/react@^19.2.4",
-    "react/": "https://esm.sh/react@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "xlsx": "https://esm.sh/xlsx@^0.18.5",
     "firebase/": "https://esm.sh/firebase@^12.8.0/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+    "react/": "https://esm.sh/react@^19.2.4/"
   }
 }
 </script>
@@ -87,9 +94,10 @@
                 <button id="btn-info" class="p-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 transition-all">
                     <i data-lucide="help-circle" class="w-6 h-6"></i>
                 </button>
-                <button id="btn-global-reset" class="p-4 rounded-2xl bg-red-950/60 hover:bg-red-800 border border-red-500/30 text-red-100 transition-all active:scale-95 shadow-lg flex items-center gap-2">
-                    <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
-                    <span class="font-bold text-sm hidden md:inline">系統重置</span>
+                <!-- Reset Button triggers Modal -->
+                <button id="btn-open-reset" class="p-3 rounded-xl bg-red-950/80 hover:bg-red-600 border border-red-500/50 text-red-200 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2" title="危險：系統重置 (清空所有資料)">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span class="font-bold text-sm">系統清空</span>
                 </button>
             </div>
         </header>
@@ -106,7 +114,12 @@
                             <i data-lucide="users" class="w-6 h-6"></i> 參加人 (<span id="count-participants">0</span>)
                         </h2>
                         <div class="flex gap-2">
-                            <button id="btn-clear-participants" class="p-2 bg-red-950/40 rounded-xl text-red-400 hover:bg-red-900/60 transition-all"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                            <!-- Modified Clear Participants Button -->
+                            <button id="btn-clear-participants" class="p-2 bg-red-950/80 hover:bg-red-600 border border-red-500/50 text-red-200 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-1 rounded-xl" title="危險：清空名單">
+                                <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                                <span class="font-bold text-xs">清空</span>
+                            </button>
+                            
                             <button id="btn-toggle-add-user" class="p-2 bg-amber-500/20 rounded-xl text-amber-400 hover:bg-amber-500/30"><i data-lucide="user-plus" class="w-5 h-5"></i></button>
                             <button onclick="document.getElementById('file-participants').click()" class="p-2 bg-amber-500/20 rounded-xl text-amber-400 hover:bg-amber-500/30"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></button>
                         </div>
@@ -217,11 +230,11 @@
 
                         <!-- Batch Winners Layout -->
                         <div id="batch-winner-display" class="hidden-el flex-col items-center flex-1 overflow-hidden">
-                            <h2 class="text-amber-100 text-3xl md:text-5xl font-black italic tracking-widest mb-8 flex items-center gap-4 drop-shadow-lg whitespace-nowrap shrink-0 mt-8">
-                                <i data-lucide="gift" class="w-10 h-10 text-red-500"></i> 馬年行大運 <i data-lucide="gift" class="w-10 h-10 text-red-500"></i>
+                            <h2 class="text-amber-100 text-3xl md:text-5xl font-black italic tracking-widest mb-4 md:mb-8 flex items-center gap-2 md:gap-4 drop-shadow-lg whitespace-nowrap shrink-0 mt-4 md:mt-8">
+                                <i data-lucide="gift" class="w-6 h-6 md:w-10 md:h-10 text-red-500"></i> 馬年行大運 <i data-lucide="gift" class="w-6 h-6 md:w-10 md:h-10 text-red-500"></i>
                             </h2>
-                            <div class="flex-1 w-full overflow-y-auto custom-scrollbar px-4 pb-4">
-                                <div id="batch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full justify-items-center">
+                            <div class="flex-1 w-full overflow-y-auto custom-scrollbar px-2 md:px-4 pb-4">
+                                <div id="batch-grid" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 w-full justify-items-center">
                                     <!-- Cards Injected Here -->
                                 </div>
                             </div>
@@ -243,7 +256,11 @@
                         </div>
                         <div class="flex gap-3">
                             <button id="btn-export" class="flex items-center gap-2 px-6 py-3 bg-green-800/40 hover:bg-green-700/60 border border-green-500/30 rounded-2xl text-green-200 font-black transition-all shadow-lg"><i data-lucide="download" class="w-5 h-5"></i> <span class="hidden md:inline">匯出</span></button>
-                            <button id="btn-clear-winners" class="p-3 bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 rounded-2xl text-red-400 transition-all shadow-lg"><i data-lucide="eraser" class="w-5 h-5"></i></button>
+                            <!-- Modified Clear Winners Button -->
+                            <button id="btn-clear-winners" class="p-3 bg-red-950/80 hover:bg-red-600 border border-red-500/50 text-red-200 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 rounded-xl" title="危險：清空所有紀錄">
+                                <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                                <span class="font-bold text-sm">清空</span>
+                            </button>
                         </div>
                     </div>
 
@@ -279,6 +296,22 @@
                     </div>
                 </div>
                 <button onclick="document.getElementById('modal-info').classList.add('hidden-el')" class="w-full bg-gradient-to-r from-amber-500 to-amber-700 text-red-950 font-black py-6 rounded-3xl hover:scale-105 transition-all text-2xl shadow-2xl">領旨開始</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Safety Reset Modal -->
+    <div id="modal-reset-confirm" class="fixed inset-0 z-[110] flex items-center justify-center p-6 hidden-el">
+        <div class="absolute inset-0 bg-red-950/90 backdrop-blur-md"></div>
+        <div class="relative bg-black border-2 border-red-500 rounded-3xl p-8 max-w-md w-full text-center shadow-[0_0_50px_rgba(239,68,68,0.5)] transform scale-100 animate-fade-in">
+            <i data-lucide="alert-triangle" class="w-16 h-16 text-red-500 mx-auto mb-4"></i>
+            <h3 class="text-2xl font-black text-red-100 mb-4">危險操作確認</h3>
+            <p id="modal-reset-desc" class="text-red-300/80 mb-8">此動作將清空資料且無法復原。<br/>請確認是否執行？</p>
+            <div class="flex gap-4">
+                <button onclick="document.getElementById('modal-reset-confirm').classList.add('hidden-el')" class="flex-1 py-4 rounded-xl bg-gray-800 text-gray-400 font-bold hover:bg-gray-700">取消</button>
+                <button id="btn-confirm-reset" disabled class="flex-1 py-4 rounded-xl bg-red-600 text-white font-black disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    確認 (3)
+                </button>
             </div>
         </div>
     </div>
@@ -369,6 +402,11 @@
             // Winners List
             winnerTabs: document.getElementById('winner-tabs'),
             winnerListContainer: document.getElementById('winner-list-container'),
+
+            // Reset Modal
+            modalReset: document.getElementById('modal-reset-confirm'),
+            modalResetDesc: document.getElementById('modal-reset-desc'),
+            btnConfirmReset: document.getElementById('btn-confirm-reset')
         };
 
         // --- Render Functions ---
@@ -382,7 +420,7 @@
                     <div class="flex-1 min-w-0 pl-1">
                         <div class="flex justify-between items-center">
                             <div class="text-sm font-bold text-amber-100 truncate">${p.name}</div>
-                            ${p.tableNumber ? `<div class="text-[10px] text-amber-500/60 font-bold flex items-center gap-0.5"><i data-lucide="armchair" class="w-3 h-3"></i> ${p.tableNumber}</div>` : ''}
+                            ${p.tableNumber ? `<div class="text-[10px] text-amber-500/60 font-bold flex items-center gap-0.5">桌次 (${p.tableNumber})</div>` : ''}
                         </div>
                     </div>
                 </div>
@@ -401,9 +439,13 @@
                         <div class="text-base font-black text-amber-100 flex justify-between items-center">
                             <span class="truncate mr-2">${p.name}</span>
                             <div class="flex items-center gap-2 shrink-0">
-                                <div class="bg-black/40 rounded-lg px-2 py-1 border border-amber-500/20 flex items-center gap-1">
-                                    <span class="text-amber-500 text-xs">#</span>
-                                    <span class="w-6 text-amber-100 font-black text-xs text-center">${p.count}</span>
+                                <div class="bg-black/40 rounded-lg px-1 py-0.5 border border-amber-500/20 flex items-center gap-1" onclick="event.stopPropagation()">
+                                    <span class="text-amber-500 text-xs pl-1">#</span>
+                                    <input type="number" 
+                                           value="${p.count}" 
+                                           onchange="window.updatePrizeCount('${p.id}', this.value)" 
+                                           class="w-12 bg-transparent text-center text-amber-100 font-black text-sm outline-none focus:bg-amber-500/10 rounded-sm"
+                                    />
                                 </div>
                                 <button onclick="event.stopPropagation(); window.deletePrize('${p.id}')" class="text-red-500/40 p-1 hover:text-red-500 hover:bg-red-950/50 rounded-lg transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
@@ -465,13 +507,13 @@
             } else if (state.currentBatch.length > 1) {
                 els.batchWinnerDisplay.classList.remove('hidden-el');
                 els.batchGrid.innerHTML = state.currentBatch.map(w => `
-                    <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-red-900/90 to-black border border-amber-500/30 p-8 shadow-2xl transform hover:scale-[1.02] transition-all flex flex-col items-center justify-center min-h-[300px] w-full text-center group">
+                    <div class="relative overflow-hidden rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-red-900/90 to-black border border-amber-500/30 p-3 md:p-8 shadow-2xl transform hover:scale-[1.02] transition-all flex flex-col items-center justify-center min-h-[160px] md:min-h-[300px] w-full text-center group">
                         <div class="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div class="text-5xl font-black text-amber-50 mb-4 drop-shadow-md w-full break-words leading-tight relative z-10">${w.name}</div>
-                        <div class="text-4xl font-bold text-amber-400 tracking-widest uppercase mt-2 flex items-center justify-center gap-2 border-t border-amber-500/20 pt-4 w-full relative z-10">
-                            <span class="text-amber-500/50 text-xl">桌</span> ${w.tableNumber || '貴賓'}
+                        <div class="text-2xl md:text-5xl font-black text-amber-50 mb-1 md:mb-4 drop-shadow-md w-full break-words leading-tight relative z-10">${w.name}</div>
+                        <div class="text-lg md:text-4xl font-bold text-amber-400 tracking-widest uppercase mt-1 md:mt-2 flex items-center justify-center gap-1 md:gap-2 border-t border-amber-500/20 pt-2 md:pt-4 w-full relative z-10">
+                            <span class="text-amber-500/50 text-xs md:text-xl">桌</span> ${w.tableNumber || '貴賓'}
                         </div>
-                        <div class="text-sm text-amber-500/60 font-bold mt-4 relative z-10">${w.prizeName}</div>
+                        <div class="text-xs md:text-sm text-amber-500/60 font-bold mt-2 md:mt-4 relative z-10 truncate w-full px-1">${w.prizeName}</div>
                     </div>
                 `).join('');
             }
@@ -536,9 +578,12 @@
                                 <div class="text-[9px] text-amber-500/50 uppercase font-bold tracking-wider leading-none mb-0.5">Table</div>
                                 <div class="text-2xl md:text-3xl font-black text-amber-400 leading-none">${w.tableNumber || '-'}</div>
                             </div>
-                            <div class="shrink-0 pl-1">
+                            <div class="shrink-0 pl-1 flex gap-1">
                                 <button onclick="window.toggleVerify('${w.id}')" class="w-10 h-10 flex items-center justify-center rounded-lg transition-all ${w.verified ? 'text-green-400' : 'text-gray-600 hover:text-amber-500'}">
                                     <i data-lucide="${w.verified ? 'check-square' : 'square'}" class="w-8 h-8"></i>
+                                </button>
+                                <button onclick="window.deleteSingleWinner('${w.id}', '${w.prizeName}')" class="w-10 h-10 flex items-center justify-center rounded-lg text-red-500/50 hover:bg-red-950/50 hover:text-red-400 transition-all" title="刪除並回補獎品">
+                                    <i data-lucide="trash-2" class="w-5 h-5"></i>
                                 </button>
                             </div>
                         </div>
@@ -560,6 +605,13 @@
             renderPrizes();
         };
 
+        // Manual Prize Count Adjustment
+        window.updatePrizeCount = (id, newVal) => {
+            const count = Math.max(0, parseInt(newVal) || 0);
+            const newPrizes = state.prizes.map(p => p.id === id ? {...p, count: count} : p);
+            updateFirebase('prizes', newPrizes);
+        };
+
         window.deletePrize = (id) => {
             if(confirm('確定要刪除此獎項嗎？')) {
                 const newPrizes = state.prizes.filter(p => p.id !== id);
@@ -576,6 +628,25 @@
         window.toggleVerify = (id) => {
             const updated = state.winners.map(w => w.id === id ? {...w, verified: !w.verified} : w);
             updateFirebase('winners', updated);
+        };
+
+        // Delete Single Winner & Restock
+        window.deleteSingleWinner = (winnerId, prizeName) => {
+            if (confirm(`⚠️ 確定要刪除此得獎者嗎？\n\n系統將自動把「${prizeName}」的剩餘數量 +1。`)) {
+                const updates = {};
+                
+                // 1. Remove from winners
+                updates['winners'] = state.winners.filter(w => w.id !== winnerId);
+                
+                // 2. Restock Prize (Find by name)
+                const prize = state.prizes.find(p => p.name === prizeName);
+                if (prize) {
+                    const newPrizes = state.prizes.map(p => p.id === prize.id ? {...p, count: p.count + 1} : p);
+                    updates['prizes'] = newPrizes;
+                }
+                
+                db.ref().update(updates);
+            }
         };
 
         // --- Event Listeners ---
@@ -679,18 +750,58 @@
             }
         });
 
-        // Resets
-        document.getElementById('btn-global-reset').addEventListener('click', () => {
-            if(confirm('⚠️ 系統重置：清空所有資料？')) {
-               if(db) db.ref('/').set({ participants: [], prizes: [], winners: [] });
-               window.location.reload(); 
+        // Shared Reset Modal Logic
+        let resetTimer = null;
+        let pendingResetAction = null;
+
+        function openSafetyModal(actionCallback, warningText) {
+            els.modalReset.classList.remove('hidden-el');
+            els.modalResetDesc.innerHTML = warningText;
+            els.btnConfirmReset.disabled = true;
+            let count = 3;
+            els.btnConfirmReset.textContent = `確認 (${count})`;
+            pendingResetAction = actionCallback;
+            
+            if (resetTimer) clearInterval(resetTimer);
+            resetTimer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    els.btnConfirmReset.textContent = `確認 (${count})`;
+                } else {
+                    clearInterval(resetTimer);
+                    els.btnConfirmReset.textContent = "確認執行";
+                    els.btnConfirmReset.disabled = false;
+                }
+            }, 1000);
+        }
+
+        els.btnConfirmReset.addEventListener('click', () => {
+            if (pendingResetAction) {
+                pendingResetAction();
             }
+            els.modalReset.classList.add('hidden-el');
         });
+
+        // 1. Global Reset
+        document.getElementById('btn-open-reset').addEventListener('click', () => {
+            openSafetyModal(() => {
+                if(db) db.ref('/').set({ participants: [], prizes: [], winners: [] });
+                window.location.reload(); 
+            }, '此動作將「清空所有資料」且無法復原。<br/>請確認是否執行系統重置？');
+        });
+
+        // 2. Clear Participants
         document.getElementById('btn-clear-participants').addEventListener('click', () => {
-            if(confirm('清空名單？')) updateFirebase('participants', []);
+             openSafetyModal(() => {
+                updateFirebase('participants', []);
+            }, '此動作將「清空所有參加者名單」且無法復原。<br/>請確認是否執行？');
         });
+
+        // 3. Clear Winners
         document.getElementById('btn-clear-winners').addEventListener('click', () => {
-            if(confirm('清空紀錄？')) updateFirebase('winners', []);
+            openSafetyModal(() => {
+                updateFirebase('winners', []);
+            }, '此動作將「清空所有得獎紀錄」且無法復原。<br/>請確認是否執行？');
         });
 
         // Info Modal
